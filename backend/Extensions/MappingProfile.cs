@@ -58,15 +58,14 @@ public class MappingProfile : Profile
 
         // Dream Interpretation mappings
         CreateMap<DreamInterpretation, DreamInterpretationDto>()
-            .ForMember(dest => dest.ExploratoryQuestions, opt => opt.MapFrom(src => 
-                string.IsNullOrEmpty(src.ExploratoryQuestions) 
-                    ? new List<string>() 
-                    : src.ExploratoryQuestions.Split('|', StringSplitOptions.RemoveEmptyEntries).ToList()));
+            .ForMember(dest => dest.SymbolInterpretations, opt => opt.Ignore())
+            .ForMember(dest => dest.EmotionalInsights, opt => opt.Ignore())
+            .ForMember(dest => dest.ExploratoryQuestions, opt => opt.Ignore())
+            .ForMember(dest => dest.ShadowWork, opt => opt.Ignore());
 
         CreateMap<DreamInterpretationDto, DreamInterpretation>()
-            .ForMember(dest => dest.ExploratoryQuestions, opt => opt.MapFrom(src => 
-                string.Join("|", src.ExploratoryQuestions)))
-            .ForMember(dest => dest.DreamId, opt => opt.Ignore())
-            .ForMember(dest => dest.Dream, opt => opt.Ignore());
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Dream, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
     }
 }

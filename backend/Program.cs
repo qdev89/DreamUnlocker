@@ -56,6 +56,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IDreamService, DreamService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IInterpretationService, InterpretationService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

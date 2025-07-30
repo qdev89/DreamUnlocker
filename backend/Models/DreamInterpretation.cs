@@ -13,10 +13,12 @@ public class DreamInterpretation
     public int DreamId { get; set; }
 
     [Required]
-    public string SymbolicAnalysis { get; set; } = string.Empty;
+    public string OverallTheme { get; set; } = string.Empty;
 
     [Required]
-    public string ExploratoryQuestions { get; set; } = string.Empty;
+    public string PrimaryMessage { get; set; } = string.Empty;
+
+    public string IntegrationSuggestion { get; set; } = string.Empty;
 
     public string? UserReflections { get; set; }
 

@@ -57,8 +57,9 @@ public class DreamUnlockerDbContext : IdentityDbContext<User>
         modelBuilder.Entity<DreamInterpretation>(entity =>
         {
             entity.HasIndex(e => e.DreamId).IsUnique();
-            entity.Property(e => e.SymbolicAnalysis).HasMaxLength(3000);
-            entity.Property(e => e.ExploratoryQuestions).HasMaxLength(2000);
+            entity.Property(e => e.OverallTheme).HasMaxLength(500);
+            entity.Property(e => e.PrimaryMessage).HasMaxLength(2000);
+            entity.Property(e => e.IntegrationSuggestion).HasMaxLength(2000);
             entity.Property(e => e.UserReflections).HasMaxLength(3000);
         });
 
