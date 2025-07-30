@@ -45,9 +45,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginRequest): Promise<void> => {
     try {
-      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
-      const { token, user: userData } = response.data;
-      
+      const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      const { token, userId, email, firstName, lastName } = response.data;
+
+      // Convert backend response to frontend User format
+      const userData: User = {
+        id: userId,
+        email,
+        firstName,
+        lastName
+      };
+
       setAuthData(token, userData);
       setUser(userData);
     } catch (error: any) {
@@ -57,9 +65,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterRequest): Promise<void> => {
     try {
-      const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, userData);
-      const { token, user: newUser } = response.data;
-      
+      const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+      const { token, userId, email, firstName, lastName } = response.data;
+
+      // Convert backend response to frontend User format
+      const newUser: User = {
+        id: userId,
+        email,
+        firstName,
+        lastName
+      };
+
       setAuthData(token, newUser);
       setUser(newUser);
     } catch (error: any) {

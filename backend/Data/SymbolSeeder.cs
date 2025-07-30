@@ -1,4 +1,5 @@
 using DreamUnlocker.Api.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace DreamUnlocker.Api.Data;
 
@@ -185,6 +186,38 @@ public static class SymbolSeeder
         };
 
         context.Symbols.AddRange(symbols);
+        context.SaveChanges();
+    }
+
+    public static void SeedTestUser(DreamUnlockerDbContext context)
+    {
+        // Check if test user already exists and remove it to recreate with proper normalization
+        var existingUser = context.Users.FirstOrDefault(u => u.Email == "test@dreamunlocker.com");
+        if (existingUser != null)
+        {
+            context.Users.Remove(existingUser);
+            context.SaveChanges();
+        }
+
+        var passwordHasher = new PasswordHasher<User>();
+        var testUser = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            Email = "test@dreamunlocker.com",
+            UserName = "test@dreamunlocker.com",
+            NormalizedEmail = "TEST@DREAMUNLOCKER.COM",
+            NormalizedUserName = "TEST@DREAMUNLOCKER.COM",
+            EmailConfirmed = true,
+            FirstName = "Test",
+            LastName = "User",
+            CreatedAt = DateTime.UtcNow,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        };
+
+        testUser.PasswordHash = passwordHasher.HashPassword(testUser, "Test123!");
+
+        context.Users.Add(testUser);
         context.SaveChanges();
     }
 }

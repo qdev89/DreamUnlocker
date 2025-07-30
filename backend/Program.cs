@@ -63,7 +63,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:5174")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -139,6 +139,9 @@ using (var scope = app.Services.CreateScope())
 
     // Seed symbols
     SymbolSeeder.SeedSymbols(context);
+
+    // Seed test user
+    SymbolSeeder.SeedTestUser(context);
 }
 
 app.Run();
