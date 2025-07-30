@@ -3,7 +3,7 @@ import {
   ChartBarIcon,
   SparklesIcon,
   HeartIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   CalendarDaysIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
@@ -93,7 +93,7 @@ export const AnalyticsPage: React.FC = () => {
         <div className="card">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <TrendingUpIcon className="h-8 w-8 text-green-600" />
+              <ArrowTrendingUpIcon className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Dream Streak</p>
@@ -258,7 +258,7 @@ export const AnalyticsPage: React.FC = () => {
       {symbolCorrelations && symbolCorrelations.length > 0 && (
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            <TrendingUpIcon className="inline h-5 w-5 mr-2" />
+            <ArrowTrendingUpIcon className="inline h-5 w-5 mr-2" />
             Symbol Correlations
           </h2>
           <p className="text-sm text-gray-600 mb-4">
