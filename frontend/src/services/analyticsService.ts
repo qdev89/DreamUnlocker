@@ -1,12 +1,12 @@
 import { api } from '../lib/axios';
 import { API_ENDPOINTS } from '../config/api';
-import { 
+import type {
   DashboardStats,
   SymbolFrequency,
   EmotionFrequency,
   SymbolCorrelation,
   EmotionPattern,
-  ActivityData 
+  ActivityData
 } from '../types';
 
 export const analyticsService = {

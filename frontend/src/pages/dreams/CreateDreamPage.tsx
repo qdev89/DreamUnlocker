@@ -8,7 +8,7 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 import { useCreateDream, useSymbols, useEmotions } from '../../hooks/useDreams';
-import { CreateDreamRequest } from '../../types';
+import type { DreamCreateData } from '../../types/firebase';
 
 export const CreateDreamPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,16 +16,16 @@ export const CreateDreamPage: React.FC = () => {
   const { data: symbols } = useSymbols();
   const { data: emotions } = useEmotions();
 
-  const [formData, setFormData] = useState<CreateDreamRequest>({
+  const [formData, setFormData] = useState<DreamCreateData>({
     title: '',
     description: '',
-    dreamDate: new Date().toISOString().split('T')[0],
-    emotionIds: [],
-    symbolNames: [],
+    dreamDate: new Date(),
+    symbols: [],
+    emotions: [],
   });
 
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>([]);
-  const [selectedEmotions, setSelectedEmotions] = useState<number[]>([]);
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [newSymbol, setNewSymbol] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -40,7 +40,7 @@ export const CreateDreamPage: React.FC = () => {
       newErrors.description = 'Description is required';
     }
 
-    if (!formData.dreamDate) {
+    if (!formData.dreamDate || isNaN(formData.dreamDate.getTime())) {
       newErrors.dreamDate = 'Dream date is required';
     }
 
@@ -56,10 +56,10 @@ export const CreateDreamPage: React.FC = () => {
     }
 
     try {
-      const dreamData = {
+      const dreamData: DreamCreateData = {
         ...formData,
-        emotionIds: selectedEmotions,
-        symbolNames: selectedSymbols,
+        symbols: selectedSymbols,
+        emotions: selectedEmotions,
       };
 
       const newDream = await createDreamMutation.mutateAsync(dreamData);
@@ -71,7 +71,12 @@ export const CreateDreamPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === 'dreamDate') {
+      setFormData(prev => ({ ...prev, [name]: new Date(value) }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
 
     // Clear error when user starts typing
     if (errors[name]) {
@@ -96,11 +101,11 @@ export const CreateDreamPage: React.FC = () => {
     }
   };
 
-  const toggleEmotion = (emotionId: number) => {
+  const toggleEmotion = (emotionName: string) => {
     setSelectedEmotions(prev =>
-      prev.includes(emotionId)
-        ? prev.filter(id => id !== emotionId)
-        : [...prev, emotionId]
+      prev.includes(emotionName)
+        ? prev.filter(name => name !== emotionName)
+        : [...prev, emotionName]
     );
   };
 
@@ -149,7 +154,7 @@ export const CreateDreamPage: React.FC = () => {
                 type="date"
                 id="dreamDate"
                 name="dreamDate"
-                value={formData.dreamDate}
+                value={formData.dreamDate.toISOString().split('T')[0]}
                 onChange={handleInputChange}
                 className={`input-field mt-1 ${errors.dreamDate ? 'border-red-300' : ''}`}
               />
@@ -280,15 +285,15 @@ export const CreateDreamPage: React.FC = () => {
                 <button
                   key={emotion.id}
                   type="button"
-                  onClick={() => toggleEmotion(emotion.id)}
+                  onClick={() => toggleEmotion(emotion.name)}
                   className={`p-3 text-sm border rounded-lg text-left transition-colors duration-200 ${
-                    selectedEmotions.includes(emotion.id)
+                    selectedEmotions.includes(emotion.name)
                       ? 'bg-primary-100 border-primary-300 text-primary-800'
                       : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <div className="font-medium">{emotion.name}</div>
-                  <div className="text-xs text-gray-600 mt-1">{emotion.description}</div>
+                  <div className="text-xs text-gray-600 mt-1">{emotion.archetypalMeaning}</div>
                 </button>
               ))}
             </div>

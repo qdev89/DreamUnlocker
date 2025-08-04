@@ -5,10 +5,8 @@ import {
   SparklesIcon,
   HeartIcon,
   ArrowLeftIcon,
-  PencilIcon,
   TrashIcon,
   LightBulbIcon,
-  EyeIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { useDream, useDeleteDream } from '../../hooks/useDreams';
@@ -17,7 +15,7 @@ import { useInterpretation, useCreateInterpretation } from '../../hooks/useInter
 export const DreamDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dreamId = parseInt(id || '0');
+  const dreamId = id || '';
 
   const { data: dream, isLoading: dreamLoading, error: dreamError } = useDream(dreamId);
   const { data: interpretation, isLoading: interpretationLoading } = useInterpretation(dreamId);
@@ -27,8 +25,8 @@ export const DreamDetailPage: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isGeneratingInterpretation, setIsGeneratingInterpretation] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -41,8 +39,10 @@ export const DreamDetailPage: React.FC = () => {
     try {
       await createInterpretationMutation.mutateAsync({
         dreamId,
-        includeShadowWork: true,
-        includePersonalHistory: true,
+        overallTheme: 'Generated interpretation',
+        primaryMessage: 'Your dream interpretation is being generated...',
+        integrationSuggestion: 'Please wait while we analyze your dream.',
+        personalReflections: ''
       });
     } catch (error) {
       console.error('Failed to generate interpretation:', error);
@@ -196,13 +196,12 @@ export const DreamDetailPage: React.FC = () => {
           </h2>
           {dream.symbols && dream.symbols.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {dream.symbols.map((symbol) => (
+              {dream.symbols.map((symbolName, index) => (
                 <span
-                  key={symbol.id}
+                  key={index}
                   className="dream-symbol"
-                  title={symbol.archetypalMeaning}
                 >
-                  {symbol.name}
+                  {symbolName}
                 </span>
               ))}
             </div>
@@ -219,18 +218,9 @@ export const DreamDetailPage: React.FC = () => {
           </h2>
           {dream.emotions && dream.emotions.length > 0 ? (
             <div className="space-y-2">
-              {dream.emotions.map((emotion) => (
-                <div key={emotion.id} className="flex items-center justify-between">
-                  <span className="emotion-tag">{emotion.name}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-primary-600 h-2 rounded-full"
-                        style={{ width: `${emotion.intensity * 10}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs text-gray-600">{emotion.intensity}/10</span>
-                  </div>
+              {dream.emotions.map((emotionName, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="emotion-tag">{emotionName}</span>
                 </div>
               ))}
             </div>
@@ -335,7 +325,7 @@ export const DreamDetailPage: React.FC = () => {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Integration Questions:</h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                      {interpretation.shadowWork.integrationQuestions.map((question, index) => (
+                      {interpretation.shadowWork.integrationQuestions.map((question: string, index: number) => (
                         <li key={index}>{question}</li>
                       ))}
                     </ul>

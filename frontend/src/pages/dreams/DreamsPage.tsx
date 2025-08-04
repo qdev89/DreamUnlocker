@@ -12,11 +12,13 @@ import {
 import { useDreams, useDeleteDream, useSearchDreams } from '../../hooks/useDreams';
 
 export const DreamsPage: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  const { data: dreamsData, isLoading, error } = useDreams(currentPage, 10);
+  const { data: dreamsData, isLoading, error } = useDreams();
+
+
   const { data: searchResults, isLoading: searchLoading } = useSearchDreams(searchQuery);
   const deleteDreamMutation = useDeleteDream();
 
@@ -28,7 +30,7 @@ export const DreamsPage: React.FC = () => {
     });
   };
 
-  const handleDeleteDream = async (dreamId: number) => {
+  const handleDeleteDream = async (dreamId: string) => {
     try {
       await deleteDreamMutation.mutateAsync(dreamId);
       setShowDeleteConfirm(null);
@@ -37,7 +39,7 @@ export const DreamsPage: React.FC = () => {
     }
   };
 
-  const displayDreams = searchQuery.length > 2 ? searchResults : dreamsData?.data;
+  const displayDreams = searchQuery.length > 2 ? searchResults : dreamsData;
   const isSearching = searchQuery.length > 2;
 
   return (
@@ -104,6 +106,9 @@ export const DreamsPage: React.FC = () => {
             <p className="mt-2 text-sm text-gray-600">
               There was a problem loading your dreams. Please try again.
             </p>
+            <p className="mt-2 text-xs text-red-600 font-mono">
+              {error?.message || String(error)}
+            </p>
           </div>
         </div>
       ) : !displayDreams?.length ? (
@@ -138,7 +143,7 @@ export const DreamsPage: React.FC = () => {
                     <h3 className="text-lg font-semibold text-gray-900 truncate">
                       {dream.title}
                     </h3>
-                    {dream.hasInterpretation && (
+                    {/* Interpretation status temporarily disabled for Firebase MVP */ false && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                         <SparklesIcon className="h-3 w-3 mr-1" />
                         Interpreted
@@ -149,20 +154,20 @@ export const DreamsPage: React.FC = () => {
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                     <div className="flex items-center gap-1">
                       <CalendarDaysIcon className="h-4 w-4" />
-                      {formatDate(dream.dreamDate)}
+                      {formatDate(dream.dreamDate.toISOString())}
                     </div>
                     <div className="flex items-center gap-1">
                       <SparklesIcon className="h-4 w-4" />
-                      {dream.symbolCount} symbols
+                      {dream.symbols.length} symbols
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="h-4 w-4 rounded-full bg-primary-200"></div>
-                      {dream.emotionCount} emotions
+                      {dream.emotions.length} emotions
                     </div>
                   </div>
 
                   <p className="text-sm text-gray-600">
-                    Created {formatDate(dream.createdAt)}
+                    Created {formatDate(dream.createdAt.toISOString())}
                   </p>
                 </div>
 
@@ -212,36 +217,7 @@ export const DreamsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Pagination */}
-      {!isSearching && dreamsData && dreamsData.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, dreamsData.totalCount)} of {dreamsData.totalCount} dreams
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-2 border border-gray-300 text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Previous
-            </button>
-
-            <span className="px-3 py-2 text-sm">
-              Page {currentPage} of {dreamsData.totalPages}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(dreamsData.totalPages, prev + 1))}
-              disabled={currentPage === dreamsData.totalPages}
-              className="px-3 py-2 border border-gray-300 text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Pagination removed for Firebase implementation */}
     </div>
   );
 };

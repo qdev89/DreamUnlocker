@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, LoginRequest, RegisterRequest, AuthResponse } from '../types';
-import { getStoredToken, getStoredUser, setAuthData, clearAuthData } from '../lib/auth';
-import { api } from '../lib/axios';
-import { API_ENDPOINTS } from '../config/api';
+import type { User as FirebaseAuthUser } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../config/firebase';
+import { firebaseAuthService } from '../services/firebase/authService';
+import type { User, RegisterData, LoginData } from '../services/firebase/authService';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
-  register: (userData: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  login: (credentials: LoginData) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,60 +34,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth data on mount
-    const token = getStoredToken();
-    const storedUser = getStoredUser();
-    
-    if (token && storedUser) {
-      setUser(storedUser);
-    }
-    
-    setIsLoading(false);
+    // Listen to Firebase auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseAuthUser | null) => {
+      if (firebaseUser) {
+        try {
+          // Get user data from Firestore
+          const userData = await firebaseAuthService.getCurrentUser();
+          setUser(userData);
+        } catch (error) {
+          console.error('Error getting user data:', error);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = async (credentials: LoginRequest): Promise<void> => {
+  const login = async (credentials: LoginData): Promise<void> => {
     try {
-      const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
-      const { token, userId, email, firstName, lastName } = response.data;
-
-      // Convert backend response to frontend User format
-      const userData: User = {
-        id: userId,
-        email,
-        firstName,
-        lastName
-      };
-
-      setAuthData(token, userData);
+      const userData = await firebaseAuthService.login(credentials);
       setUser(userData);
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Login failed');
+      throw new Error(error.message || 'Login failed');
     }
   };
 
-  const register = async (userData: RegisterRequest): Promise<void> => {
+  const register = async (userData: RegisterData): Promise<void> => {
     try {
-      const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, userData);
-      const { token, userId, email, firstName, lastName } = response.data;
-
-      // Convert backend response to frontend User format
-      const newUser: User = {
-        id: userId,
-        email,
-        firstName,
-        lastName
-      };
-
-      setAuthData(token, newUser);
+      const newUser = await firebaseAuthService.register(userData);
       setUser(newUser);
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Registration failed');
+      throw new Error(error.message || 'Registration failed');
     }
   };
 
-  const logout = (): void => {
-    clearAuthData();
-    setUser(null);
+  const logout = async (): Promise<void> => {
+    try {
+      await firebaseAuthService.logout();
+      setUser(null);
+    } catch (error: any) {
+      throw new Error(error.message || 'Logout failed');
+    }
+  };
+
+  const resetPassword = async (email: string): Promise<void> => {
+    try {
+      await firebaseAuthService.resetPassword(email);
+    } catch (error: any) {
+      throw new Error(error.message || 'Password reset failed');
+    }
   };
 
   const value: AuthContextType = {
@@ -95,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    resetPassword,
   };
 
   return (

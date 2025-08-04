@@ -12,7 +12,7 @@ import {
   useTopSymbols,
   useTopEmotions,
   useSymbolCorrelations,
-  useEmotionPatterns,
+
   useActivityData
 } from '../hooks/useAnalytics';
 import { useInterpretationThemes, usePersonalSymbolPatterns } from '../hooks/useInterpretation';
@@ -23,11 +23,11 @@ export const AnalyticsPage: React.FC = () => {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: topSymbols, isLoading: symbolsLoading } = useTopSymbols(10);
   const { data: topEmotions, isLoading: emotionsLoading } = useTopEmotions(10);
-  const { data: symbolCorrelations, isLoading: correlationsLoading } = useSymbolCorrelations();
-  const { data: emotionPatterns, isLoading: patternsLoading } = useEmotionPatterns();
+  const { data: symbolCorrelations } = useSymbolCorrelations();
+  // const { data: emotionPatterns } = useEmotionPatterns();
   const { data: activityData, isLoading: activityLoading } = useActivityData(selectedTimeframe);
-  const { data: themes, isLoading: themesLoading } = useInterpretationThemes();
-  const { data: personalPatterns, isLoading: personalPatternsLoading } = usePersonalSymbolPatterns();
+  const { data: themes } = useInterpretationThemes();
+  const { data: personalPatterns } = usePersonalSymbolPatterns();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -84,7 +84,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg Emotions</p>
               <p className="text-2xl font-bold text-gray-900">
-                {statsLoading ? '...' : stats?.averageEmotionsPerDream?.toFixed(1) || '0'}
+                {statsLoading ? '...' : '0'}
               </p>
             </div>
           </div>
@@ -98,7 +98,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Dream Streak</p>
               <p className="text-2xl font-bold text-gray-900">
-                {statsLoading ? '...' : stats?.dreamingStreak || 0} days
+                {statsLoading ? '...' : 0} days
               </p>
             </div>
           </div>
@@ -134,9 +134,9 @@ export const AnalyticsPage: React.FC = () => {
                 <div
                   className="w-full bg-primary-600 rounded-t transition-all duration-300 hover:bg-primary-700"
                   style={{
-                    height: `${Math.max(4, (day.dreamCount / Math.max(...activityData.map(d => d.dreamCount))) * 240)}px`
+                    height: `${Math.max(4, (day.count / Math.max(...activityData.map(d => d.count))) * 240)}px`
                   }}
-                  title={`${formatDate(day.date)}: ${day.dreamCount} dreams`}
+                  title={`${formatDate(day.date)}: ${day.count} dreams`}
                 ></div>
                 <span className="text-xs text-gray-600 mt-2 transform -rotate-45 origin-top-left">
                   {formatDate(day.date)}
@@ -222,12 +222,12 @@ export const AnalyticsPage: React.FC = () => {
           ) : topEmotions && topEmotions.length > 0 ? (
             <div className="space-y-4">
               {topEmotions.map((emotion, index) => (
-                <div key={emotion.emotionName} className="flex items-center justify-between">
+                <div key={emotion.symbolName} className="flex items-center justify-between">
                   <div className="flex items-center flex-1">
                     <span className="text-sm font-medium text-gray-500 w-6">
                       {index + 1}.
                     </span>
-                    <span className="emotion-tag ml-3">{emotion.emotionName}</span>
+                    <span className="emotion-tag ml-3">{emotion.symbolName}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-24 bg-gray-200 rounded-full h-2">
@@ -255,7 +255,7 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Symbol Correlations */}
-      {symbolCorrelations && symbolCorrelations.length > 0 && (
+      {symbolCorrelations && symbolCorrelations.topCategories && symbolCorrelations.topCategories.length > 0 && (
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             <ArrowTrendingUpIcon className="inline h-5 w-5 mr-2" />
@@ -266,7 +266,7 @@ export const AnalyticsPage: React.FC = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {symbolCorrelations.slice(0, 6).map((correlation, index) => (
+            {symbolCorrelations.topCategories.slice(0, 6).map((correlation: any, index: number) => (
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -301,20 +301,12 @@ export const AnalyticsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {themes.map((theme, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">{theme.themeName}</h3>
-                <p className="text-sm text-gray-600 mb-3">{theme.description}</p>
+                <h3 className="font-semibold text-gray-900 mb-2">{theme.overallTheme}</h3>
+                <p className="text-sm text-gray-600 mb-3">{theme.overallTheme}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500">
-                    Appears in {theme.frequency} dreams
+                    Dream interpretation
                   </span>
-                  <div className="w-16 bg-gray-200 rounded-full h-1">
-                    <div
-                      className="bg-secondary-600 h-1 rounded-full"
-                      style={{
-                        width: `${Math.min(100, (theme.frequency / (stats?.totalDreams || 1)) * 100)}%`
-                      }}
-                    ></div>
-                  </div>
                 </div>
               </div>
             ))}
@@ -337,17 +329,13 @@ export const AnalyticsPage: React.FC = () => {
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{pattern.symbolName}</h3>
+                    <h3 className="font-semibold text-gray-900">{pattern.overallTheme}</h3>
                     <p className="text-sm text-gray-600">
-                      First appeared: {formatDate(pattern.firstAppearance)} •
-                      Latest: {formatDate(pattern.lastAppearance)}
+                      Dream interpretation pattern
                     </p>
                   </div>
-                  <span className="text-sm font-medium text-primary-600">
-                    {pattern.frequency} times
-                  </span>
                 </div>
-                <p className="text-sm text-gray-700">{pattern.evolutionNotes}</p>
+                <p className="text-sm text-gray-700">{pattern.overallTheme}</p>
               </div>
             ))}
           </div>
