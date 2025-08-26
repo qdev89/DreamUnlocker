@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { RegisterRequest } from '../../types';
+import type { RegisterData } from '../../services/firebase/authService';
 
 export const RegisterPage: React.FC = () => {
-  const [formData, setFormData] = useState<RegisterRequest>({
+  const [formData, setFormData] = useState<RegisterData & { confirmPassword: string }>({
     email: '',
     password: '',
     confirmPassword: '',
@@ -29,7 +29,8 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await register(formData);
+      const { confirmPassword, ...registerData } = formData;
+      await register(registerData);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);

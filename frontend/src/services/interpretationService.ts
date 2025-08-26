@@ -1,11 +1,11 @@
 import { api } from '../lib/axios';
 import { API_ENDPOINTS } from '../config/api';
-import { 
+import type {
   DreamInterpretation,
   CreateInterpretationRequest,
   InterpretationTheme,
   PersonalSymbolPattern,
-  ShadowWork 
+  ShadowWork
 } from '../types';
 
 export const interpretationService = {

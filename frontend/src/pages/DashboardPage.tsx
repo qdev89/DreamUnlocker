@@ -8,7 +8,7 @@ import {
   CalendarDaysIcon,
   FireIcon
 } from '@heroicons/react/24/outline';
-import { useDashboardStats, useTopSymbols, useTopEmotions } from '../hooks/useAnalytics';
+import { useDashboardStats, useTopSymbols } from '../hooks/useAnalytics';
 import { useDreams } from '../hooks/useDreams';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -16,8 +16,8 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: topSymbols, isLoading: symbolsLoading } = useTopSymbols(5);
-  const { data: topEmotions, isLoading: emotionsLoading } = useTopEmotions(5);
-  const { data: recentDreams, isLoading: dreamsLoading } = useDreams(1, 3);
+  // const { data: topEmotions, isLoading: emotionsLoading } = useTopEmotions(5);
+  const { data: recentDreams, isLoading: dreamsLoading } = useDreams(3);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -77,7 +77,7 @@ export const DashboardPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Dream Streak</p>
               <p className="text-2xl font-bold text-gray-900">
-                {statsLoading ? '...' : stats?.dreamingStreak || 0} days
+                {statsLoading ? '...' : 0} days
               </p>
             </div>
           </div>
@@ -91,7 +91,7 @@ export const DashboardPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Last Dream</p>
               <p className="text-sm font-bold text-gray-900">
-                {statsLoading ? '...' : stats?.lastDreamDate ? formatDate(stats.lastDreamDate) : 'None'}
+                {statsLoading ? '...' : 'None'}
               </p>
             </div>
           </div>
@@ -158,9 +158,9 @@ export const DashboardPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          ) : recentDreams?.data.length ? (
+          ) : recentDreams?.length ? (
             <div className="space-y-4">
-              {recentDreams.data.map((dream) => (
+              {recentDreams.slice(0, 3).map((dream) => (
                 <Link
                   key={dream.id}
                   to={`/dreams/${dream.id}`}
@@ -168,9 +168,9 @@ export const DashboardPage: React.FC = () => {
                 >
                   <h3 className="font-medium text-gray-900 truncate">{dream.title}</h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    {formatDate(dream.dreamDate)} • {dream.symbolCount} symbols • {dream.emotionCount} emotions
+                    {formatDate(dream.dreamDate.toISOString())} • {dream.symbols.length} symbols • {dream.emotions.length} emotions
                   </p>
-                  {dream.hasInterpretation && (
+                  {/* Interpretation status temporarily disabled for Firebase MVP */ false && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mt-2">
                       Interpreted
                     </span>

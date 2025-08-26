@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LoginRequest } from '../../types';
+import type { LoginData } from '../../services/firebase/authService';
 
 export const LoginPage: React.FC = () => {
-  const [formData, setFormData] = useState<LoginRequest>({
+  const [formData, setFormData] = useState<LoginData>({
     email: '',
     password: '',
   });

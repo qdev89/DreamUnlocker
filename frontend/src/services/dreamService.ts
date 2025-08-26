@@ -1,12 +1,12 @@
 import { api } from '../lib/axios';
 import { API_ENDPOINTS } from '../config/api';
-import { 
-  Dream, 
-  CreateDreamRequest, 
-  DreamSummary, 
+import type {
+  Dream,
+  CreateDreamRequest,
+  DreamSummary,
   PaginatedResponse,
   Symbol,
-  Emotion 
+  Emotion
 } from '../types';
 
 export const dreamService = {

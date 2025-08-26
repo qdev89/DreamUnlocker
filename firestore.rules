@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Users can read and write their own dreams
+    match /dreams/{dreamId} {
+      allow read, write: if request.auth != null &&
+        (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Users can read and write their own interpretations
+    match /interpretations/{dreamId} {
+      allow read, write: if request.auth != null && 
+        exists(/databases/$(database)/documents/dreams/$(dreamId)) &&
+        get(/databases/$(database)/documents/dreams/$(dreamId)).data.userId == request.auth.uid;
+    }
+    
+    // Users can read and write their own symbol frequencies
+    match /userSymbolFrequencies/{docId} {
+      allow read, write: if request.auth != null && 
+        (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // All authenticated users can read symbols (public data)
+    match /symbols/{symbolId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can write symbols (handled via admin SDK)
+    }
+    
+    // All authenticated users can read emotions (public data)
+    match /emotions/{emotionId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can write emotions
+    }
+  }
+}
