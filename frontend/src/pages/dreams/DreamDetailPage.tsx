@@ -7,7 +7,10 @@ import {
   ArrowLeftIcon,
   TrashIcon,
   LightBulbIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  EyeIcon,
+  ClockIcon,
+  ShareIcon
 } from '@heroicons/react/24/outline';
 import { useDream, useDeleteDream } from '../../hooks/useDreams';
 import { useInterpretation, useCreateInterpretation } from '../../hooks/useInterpretation';
@@ -32,6 +35,24 @@ export const DreamDetailPage: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const formatRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return `${Math.floor(diffDays / 30)} months ago`;
+  };
+
+  const estimateReadingTime = (text: string) => {
+    const wordsPerMinute = 200;
+    const words = text.split(' ').length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return minutes;
   };
 
   const handleGenerateInterpretation = async () => {
@@ -105,44 +126,76 @@ export const DreamDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <Link
-              to="/dreams"
-              className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+      <div className="space-y-4">
+        {/* Navigation */}
+        <div className="flex items-center justify-between">
+          <Link
+            to="/dreams"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-1" />
+            Back to Dreams
+          </Link>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigator.share && navigator.share({
+                title: dream.title,
+                text: dream.description.substring(0, 100) + '...',
+                url: window.location.href,
+              })}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 sm:inline-flex hidden"
             >
-              <ArrowLeftIcon className="h-4 w-4 mr-1" />
-              Back to Dreams
-            </Link>
-          </div>
-
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{dream.title}</h1>
-
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <CalendarDaysIcon className="h-4 w-4" />
-              {formatDate(dream.dreamDate)}
-            </div>
-            <div className="flex items-center gap-1">
-              <SparklesIcon className="h-4 w-4" />
-              {dream.symbols?.length || 0} symbols
-            </div>
-            <div className="flex items-center gap-1">
-              <HeartIcon className="h-4 w-4" />
-              {dream.emotions?.length || 0} emotions
-            </div>
+              <ShareIcon className="h-4 w-4 mr-1" />
+              Share
+            </button>
+            
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+            >
+              <TrashIcon className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
-          >
-            <TrashIcon className="h-4 w-4 mr-1" />
-            Delete
-          </button>
+        {/* Title and Metadata */}
+        <div className="space-y-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">{dream.title}</h1>
+          
+          {/* Dream Metadata */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
+            <div className="flex items-center gap-1">
+              <CalendarDaysIcon className="h-4 w-4 flex-shrink-0" />
+              <div>
+                <div className="font-medium">{formatDate(dream.dreamDate)}</div>
+                <div className="text-xs text-gray-500">{formatRelativeTime(dream.dreamDate)}</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <EyeIcon className="h-4 w-4 flex-shrink-0" />
+              <span>{estimateReadingTime(dream.description)} min read</span>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <SparklesIcon className="h-4 w-4 flex-shrink-0" />
+              <span>{dream.symbols?.length || 0} symbols</span>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <HeartIcon className="h-4 w-4 flex-shrink-0" />
+              <span>{dream.emotions?.length || 0} emotions</span>
+            </div>
+
+            {dream.createdAt && (
+              <div className="flex items-center gap-1">
+                <ClockIcon className="h-4 w-4 flex-shrink-0" />
+                <span>Added {formatRelativeTime(dream.createdAt)}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -178,11 +231,38 @@ export const DreamDetailPage: React.FC = () => {
 
       {/* Dream Content */}
       <div className="card">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Dream Description</h2>
-        <div className="prose max-w-none">
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-            {dream.description}
-          </p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="w-1 h-6 bg-gradient-to-b from-primary-500 to-secondary-500 rounded-full mr-3"></span>
+          Dream Description
+        </h2>
+        <div className="prose prose-lg max-w-none">
+          <div 
+            className="text-gray-700 leading-relaxed font-serif text-lg"
+            style={{ 
+              fontFamily: "'Crimson Text', Georgia, serif",
+              lineHeight: "1.75",
+              textAlign: "justify" 
+            }}
+          >
+            {dream.description.split('\n').map((paragraph, index) => (
+              paragraph.trim() && (
+                <p key={index} className="mb-4 first-letter:text-4xl first-letter:font-bold first-letter:text-primary-600 first-letter:float-left first-letter:mr-2 first-letter:mt-1">
+                  {paragraph}
+                </p>
+              )
+            ))}
+          </div>
+        </div>
+        
+        {/* Word count and analysis */}
+        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-500">
+          <div className="flex items-center gap-4">
+            <span>{dream.description.split(' ').length} words</span>
+            <span>{dream.description.length} characters</span>
+          </div>
+          <div className="text-xs text-gray-400">
+            Recorded {new Date(dream.createdAt).toLocaleDateString()}
+          </div>
         </div>
       </div>
 
@@ -190,42 +270,75 @@ export const DreamDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Symbols */}
         <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            <SparklesIcon className="inline h-5 w-5 mr-2" />
-            Symbols
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <SparklesIcon className="h-5 w-5 mr-2 text-secondary-600" />
+              Symbols
+            </h2>
+            <span className="text-sm text-gray-500">
+              {dream.symbols?.length || 0} identified
+            </span>
+          </div>
+          
           {dream.symbols && dream.symbols.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {dream.symbols.map((symbolName, index) => (
-                <span
-                  key={index}
-                  className="dream-symbol"
-                >
-                  {symbolName}
-                </span>
-              ))}
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {dream.symbols.map((symbolName, index) => (
+                  <span
+                    key={index}
+                    className="dream-symbol group cursor-help relative"
+                    title={`Click to learn more about the symbolism of "${symbolName}"`}
+                  >
+                    {symbolName}
+                  </span>
+                ))}
+              </div>
+              
+              {/* Symbol stats */}
+              <div className="text-xs text-gray-500 pt-2 border-t">
+                These symbols will be analyzed in your Jungian interpretation
+              </div>
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">No symbols recorded</p>
+            <div className="text-center py-6">
+              <SparklesIcon className="mx-auto h-8 w-8 text-gray-300 mb-2" />
+              <p className="text-gray-500 text-sm">No symbols recorded for this dream</p>
+            </div>
           )}
         </div>
 
         {/* Emotions */}
         <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            <HeartIcon className="inline h-5 w-5 mr-2" />
-            Emotions
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <HeartIcon className="h-5 w-5 mr-2 text-primary-600" />
+              Emotions
+            </h2>
+            <span className="text-sm text-gray-500">
+              {dream.emotions?.length || 0} recorded
+            </span>
+          </div>
+          
           {dream.emotions && dream.emotions.length > 0 ? (
-            <div className="space-y-2">
-              {dream.emotions.map((emotionName, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="emotion-tag">{emotionName}</span>
-                </div>
-              ))}
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-2">
+                {dream.emotions.map((emotionName, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                    <span className="emotion-tag">{emotionName}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Emotion insights */}
+              <div className="text-xs text-gray-500 pt-2 border-t">
+                Emotional patterns help reveal your dream's deeper meaning
+              </div>
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">No emotions recorded</p>
+            <div className="text-center py-6">
+              <HeartIcon className="mx-auto h-8 w-8 text-gray-300 mb-2" />
+              <p className="text-gray-500 text-sm">No emotions recorded for this dream</p>
+            </div>
           )}
         </div>
       </div>
@@ -239,25 +352,63 @@ export const DreamDetailPage: React.FC = () => {
           </h2>
 
           {!interpretation && (
-            <button
-              onClick={handleGenerateInterpretation}
-              disabled={isGeneratingInterpretation || createInterpretationMutation.isPending}
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <SparklesIcon className="h-4 w-4" />
-              {isGeneratingInterpretation || createInterpretationMutation.isPending
-                ? 'Generating...'
-                : 'Generate Interpretation'
-              }
-            </button>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <button
+                onClick={handleGenerateInterpretation}
+                disabled={isGeneratingInterpretation || createInterpretationMutation.isPending}
+                className="btn-primary inline-flex items-center gap-2 relative"
+              >
+                {isGeneratingInterpretation || createInterpretationMutation.isPending ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Generating Interpretation...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="h-4 w-4" />
+                    Generate Interpretation
+                  </>
+                )}
+              </button>
+              
+              {!isGeneratingInterpretation && (
+                <p className="text-sm text-gray-600">
+                  Unlock the hidden meanings and archetypal insights in your dream
+                </p>
+              )}
+            </div>
           )}
         </div>
 
-        {interpretationLoading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+        {interpretationLoading || isGeneratingInterpretation ? (
+          <div className="space-y-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="animate-spin h-8 w-8 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-600 font-medium">Analyzing your dream...</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Exploring archetypal symbols and unconscious patterns
+                </p>
+              </div>
+            </div>
+            
+            <div className="animate-pulse space-y-4">
+              <div className="interpretation-section">
+                <div className="h-5 bg-gray-200 rounded w-1/4 mb-3"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+              
+              <div className="interpretation-section">
+                <div className="h-5 bg-gray-200 rounded w-1/3 mb-3"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : interpretation ? (
           <div className="space-y-6">
