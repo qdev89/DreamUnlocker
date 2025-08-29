@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CalendarDaysIcon,
   SparklesIcon,
   HeartIcon,
   XMarkIcon,
-  PlusIcon
+  PlusIcon,
+  InformationCircleIcon,
+  BookmarkIcon
 } from '@heroicons/react/24/outline';
 import { useCreateDream, useSymbols, useEmotions } from '../../hooks/useDreams';
 import type { DreamCreateData } from '../../types/firebase';
@@ -28,6 +30,63 @@ export const CreateDreamPage: React.FC = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [newSymbol, setNewSymbol] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [symbolFilter, setSymbolFilter] = useState('');
+  const [showSymbolTooltip, setShowSymbolTooltip] = useState<string | null>(null);
+  const [isDraftSaved, setIsDraftSaved] = useState(false);
+
+  // Auto-save draft functionality
+  useEffect(() => {
+    const saveDraft = () => {
+      const draft = {
+        title: formData.title,
+        description: formData.description,
+        dreamDate: formData.dreamDate.toISOString(),
+        symbols: selectedSymbols,
+        emotions: selectedEmotions,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('dream-draft', JSON.stringify(draft));
+      setIsDraftSaved(true);
+    };
+
+    const timeoutId = setTimeout(() => {
+      if (formData.title || formData.description) {
+        saveDraft();
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, selectedSymbols, selectedEmotions]);
+
+  // Load draft on component mount
+  useEffect(() => {
+    const loadDraft = () => {
+      const draft = localStorage.getItem('dream-draft');
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft);
+          const draftAge = Date.now() - parsed.timestamp;
+          
+          // Only load draft if it's less than 24 hours old
+          if (draftAge < 24 * 60 * 60 * 1000) {
+            setFormData({
+              title: parsed.title || '',
+              description: parsed.description || '',
+              dreamDate: parsed.dreamDate ? new Date(parsed.dreamDate) : new Date(),
+              symbols: [],
+              emotions: []
+            });
+            setSelectedSymbols(parsed.symbols || []);
+            setSelectedEmotions(parsed.emotions || []);
+          }
+        } catch (error) {
+          console.error('Error loading draft:', error);
+        }
+      }
+    };
+
+    loadDraft();
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -63,6 +122,10 @@ export const CreateDreamPage: React.FC = () => {
       };
 
       const newDream = await createDreamMutation.mutateAsync(dreamData);
+      
+      // Clear draft after successful submission
+      localStorage.removeItem('dream-draft');
+      
       navigate(`/dreams/${newDream.id}`);
     } catch (error: any) {
       setErrors({ submit: error.message || 'Failed to create dream' });
@@ -82,6 +145,9 @@ export const CreateDreamPage: React.FC = () => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+
+    // Reset draft saved status when user types
+    setIsDraftSaved(false);
   };
 
   const addSymbol = (symbolName: string) => {
@@ -109,14 +175,34 @@ export const CreateDreamPage: React.FC = () => {
     );
   };
 
+  // Filter symbols based on search
+  const filteredSymbols = symbols?.filter(symbol => 
+    symbol.name.toLowerCase().includes(symbolFilter.toLowerCase()) ||
+    symbol.category.toLowerCase().includes(symbolFilter.toLowerCase())
+  ) || [];
+
+  // Character count for description
+  const descriptionCount = formData.description.length;
+  const maxDescriptionLength = 2000;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Record New Dream</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Capture the details of your dream for Jungian analysis and interpretation
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Record New Dream</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Capture the details of your dream for Jungian analysis and interpretation
+            </p>
+          </div>
+          {isDraftSaved && (
+            <div className="flex items-center text-sm text-green-600">
+              <BookmarkIcon className="h-4 w-4 mr-1" />
+              Draft saved
+            </div>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -165,13 +251,22 @@ export const CreateDreamPage: React.FC = () => {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Dream Description *
-              </label>
+              <div className="flex justify-between items-center">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Dream Description *
+                </label>
+                <span className={`text-sm ${
+                  descriptionCount > maxDescriptionLength ? 'text-red-600' : 
+                  descriptionCount > maxDescriptionLength * 0.9 ? 'text-yellow-600' : 'text-gray-500'
+                }`}>
+                  {descriptionCount.toLocaleString()}/{maxDescriptionLength.toLocaleString()}
+                </span>
+              </div>
               <textarea
                 id="description"
                 name="description"
                 rows={6}
+                maxLength={maxDescriptionLength}
                 value={formData.description}
                 onChange={handleInputChange}
                 className={`textarea-field mt-1 ${errors.description ? 'border-red-300' : ''}`}
@@ -180,9 +275,16 @@ export const CreateDreamPage: React.FC = () => {
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600">{errors.description}</p>
               )}
-              <p className="mt-1 text-sm text-gray-500">
-                The more detail you provide, the richer your interpretation will be.
-              </p>
+              <div className="flex items-start justify-between mt-1">
+                <p className="text-sm text-gray-500">
+                  The more detail you provide, the richer your interpretation will be.
+                </p>
+                {descriptionCount > 50 && (
+                  <div className="text-xs text-gray-400 ml-4">
+                    {Math.ceil(descriptionCount / 250)} min read
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -243,27 +345,81 @@ export const CreateDreamPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Common Symbols */}
+          {/* Symbol Search */}
+          <div>
+            <label htmlFor="symbolFilter" className="block text-sm font-medium text-gray-700 mb-2">
+              Search Symbols:
+            </label>
+            <input
+              type="text"
+              id="symbolFilter"
+              value={symbolFilter}
+              onChange={(e) => setSymbolFilter(e.target.value)}
+              placeholder="Search by name or category..."
+              className="input-field"
+            />
+          </div>
+
+          {/* Jungian Symbols */}
           {symbols && (
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Common Symbols:</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {symbols.slice(0, 20).map((symbol) => (
-                  <button
-                    key={symbol.id}
-                    type="button"
-                    onClick={() => addSymbol(symbol.name)}
-                    disabled={selectedSymbols.includes(symbol.name)}
-                    className={`p-2 text-sm border rounded-lg text-left transition-colors duration-200 ${
-                      selectedSymbols.includes(symbol.name)
-                        ? 'bg-secondary-100 border-secondary-300 text-secondary-800'
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {symbol.name}
-                  </button>
+              <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <SparklesIcon className="h-4 w-4 mr-1" />
+                Jungian Symbols {filteredSymbols.length > 0 && `(${filteredSymbols.length})`}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                {filteredSymbols.slice(0, 20).map((symbol) => (
+                  <div key={symbol.id} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => addSymbol(symbol.name)}
+                      disabled={selectedSymbols.includes(symbol.name)}
+                      onMouseEnter={() => setShowSymbolTooltip(symbol.id)}
+                      onMouseLeave={() => setShowSymbolTooltip(null)}
+                      className={`w-full p-3 text-sm border rounded-lg text-left transition-colors duration-200 relative ${
+                        selectedSymbols.includes(symbol.name)
+                          ? 'bg-secondary-100 border-secondary-300 text-secondary-800'
+                          : 'border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{symbol.name}</div>
+                          <div className="text-xs text-gray-500 mt-1">{symbol.category}</div>
+                        </div>
+                        <InformationCircleIcon className="h-4 w-4 text-gray-400" />
+                      </div>
+                    </button>
+                    
+                    {/* Tooltip */}
+                    {showSymbolTooltip === symbol.id && (
+                      <div className="absolute z-10 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg -top-2 left-full ml-2 transform -translate-y-full">
+                        <div className="font-medium mb-1">{symbol.name}</div>
+                        <div className="mb-2 opacity-90">{symbol.archetypalMeaning}</div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-green-300">Positive: </span>
+                            {symbol.positiveAspect}
+                          </div>
+                          <div>
+                            <span className="text-red-300">Shadow: </span>
+                            {symbol.negativeAspect}
+                          </div>
+                        </div>
+                        {/* Arrow */}
+                        <div className="absolute top-4 left-0 transform -translate-x-full">
+                          <div className="w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
+              {filteredSymbols.length === 0 && symbolFilter && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No symbols found matching "{symbolFilter}"
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -311,19 +467,50 @@ export const CreateDreamPage: React.FC = () => {
           <div className="flex gap-4">
             <button
               type="submit"
-              disabled={createDreamMutation.isPending}
-              className="btn-primary flex-1"
+              disabled={createDreamMutation.isPending || !formData.title.trim() || !formData.description.trim()}
+              className="btn-primary flex-1 relative"
             >
-              {createDreamMutation.isPending ? 'Recording Dream...' : 'Record Dream'}
+              {createDreamMutation.isPending ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Recording Dream...
+                </div>
+              ) : (
+                'Record Dream'
+              )}
             </button>
 
             <button
               type="button"
-              onClick={() => navigate('/dreams')}
+              onClick={() => {
+                if (formData.title || formData.description) {
+                  const confirmLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+                  if (!confirmLeave) return;
+                }
+                localStorage.removeItem('dream-draft');
+                navigate('/dreams');
+              }}
+              disabled={createDreamMutation.isPending}
               className="btn-secondary"
             >
               Cancel
             </button>
+          </div>
+
+          {/* Helpful Tips */}
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start">
+              <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="text-blue-900 font-medium mb-1">💡 Tips for Better Dream Analysis:</p>
+                <ul className="text-blue-800 space-y-1 text-xs">
+                  <li>• Include emotions you felt during and after the dream</li>
+                  <li>• Describe colors, sounds, and sensations in detail</li>
+                  <li>• Note recurring elements or symbols from past dreams</li>
+                  <li>• Don't worry about grammar - focus on capturing the essence</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </form>

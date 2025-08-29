@@ -1,0 +1,22 @@
+{
+  "name": "dream-unlocker-tests",
+  "version": "1.0.0",
+  "description": "Test suite for Dream Unlocker Firebase functionality",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "setup": "node setup.mjs"
+  },
+  "dependencies": {
+    "firebase": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "@vitest/ui": "^2.0.5",
+    "dotenv": "^16.4.5",
+    "vitest": "^2.0.5"
+  }
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BookOpenIcon,
@@ -6,7 +6,11 @@ import {
   SparklesIcon,
   PlusIcon,
   CalendarDaysIcon,
-  FireIcon
+  FireIcon,
+  TrophyIcon,
+  ClockIcon,
+  ArrowTrendingUpIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline';
 import { useDashboardStats, useTopSymbols } from '../hooks/useAnalytics';
 import { useDreams } from '../hooks/useDreams';
@@ -19,6 +23,8 @@ export const DashboardPage: React.FC = () => {
   // const { data: topEmotions, isLoading: emotionsLoading } = useTopEmotions(5);
   const { data: recentDreams, isLoading: dreamsLoading } = useDreams(3);
 
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'all'>('week');
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -27,72 +33,168 @@ export const DashboardPage: React.FC = () => {
     });
   };
 
+  const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 18) return 'afternoon';
+    return 'evening';
+  };
+
+  const getGreeting = () => {
+    const timeOfDay = getTimeOfDay();
+    const greetings = {
+      morning: ['Good morning', 'Rise and shine', 'Hello there'],
+      afternoon: ['Good afternoon', 'Hope your day is going well', 'Hello'],
+      evening: ['Good evening', 'Hope you had a great day', 'Welcome back']
+    };
+    
+    return greetings[timeOfDay][Math.floor(Math.random() * greetings[timeOfDay].length)];
+  };
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {user?.firstName}
-        </h1>
-        <p className="mt-2 text-lg text-gray-600">
-          Continue your journey of dream exploration and self-discovery
-        </p>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 via-secondary-50 to-dream-50 p-8 border border-primary-100">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                {getGreeting()}, {user?.firstName}! 
+                <span className="ml-2 text-2xl">
+                  {getTimeOfDay() === 'morning' && '🌅'}
+                  {getTimeOfDay() === 'afternoon' && '☀️'}
+                  {getTimeOfDay() === 'evening' && '🌙'}
+                </span>
+              </h1>
+              <p className="text-lg text-gray-700 mb-4">
+                Ready to explore the mysteries of your unconscious mind?
+              </p>
+              
+              {recentDreams && recentDreams.length > 0 ? (
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <ClockIcon className="h-4 w-4" />
+                    <span>Last dream: {formatDate(recentDreams[0].dreamDate.toISOString())}</span>
+                  </div>
+                  {recentDreams.length >= 2 && (
+                    <div className="flex items-center gap-1">
+                      <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                      <span className="text-green-700">Active dreamer</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <MoonIcon className="h-4 w-4" />
+                  <span>Start your dream journey today</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="hidden sm:block">
+              <Link
+                to="/dreams/new"
+                className="btn-primary inline-flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <PlusIcon className="h-5 w-5" />
+                Record Dream
+              </Link>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-primary-100 opacity-20"></div>
+        <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-16 w-16 rounded-full bg-secondary-100 opacity-20"></div>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <BookOpenIcon className="h-8 w-8 text-primary-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Dreams</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {statsLoading ? '...' : stats?.totalDreams || 0}
+        <div className="card hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Dreams</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {statsLoading ? (
+                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                ) : (
+                  <span className="tabular-nums">{stats?.totalDreams || recentDreams?.length || 0}</span>
+                )}
               </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {recentDreams?.length ? `${recentDreams.length} recent` : 'Start recording'}
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="p-3 bg-primary-100 rounded-xl">
+                <BookOpenIcon className="h-8 w-8 text-primary-600" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <SparklesIcon className="h-8 w-8 text-secondary-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Unique Symbols</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {statsLoading ? '...' : stats?.totalSymbols || 0}
+        <div className="card hover:shadow-lg transition-all duration-200 border-l-4 border-l-secondary-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Unique Symbols</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {statsLoading ? (
+                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                ) : (
+                  <span className="tabular-nums">{stats?.totalSymbols || 0}</span>
+                )}
               </p>
+              <p className="text-xs text-gray-500 mt-1">Archetypal patterns</p>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="p-3 bg-secondary-100 rounded-xl">
+                <SparklesIcon className="h-8 w-8 text-secondary-600" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <FireIcon className="h-8 w-8 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Dream Streak</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {statsLoading ? '...' : 0} days
+        <div className="card hover:shadow-lg transition-all duration-200 border-l-4 border-l-orange-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Dream Streak</p>
+              <p className="text-3xl font-bold text-gray-900 tabular-nums">
+                {statsLoading ? (
+                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                ) : (
+                  '0'
+                )}
+                <span className="text-base font-normal text-gray-600 ml-1">days</span>
               </p>
+              <p className="text-xs text-gray-500 mt-1">Keep the momentum</p>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="p-3 bg-orange-100 rounded-xl">
+                <FireIcon className="h-8 w-8 text-orange-600" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <CalendarDaysIcon className="h-8 w-8 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Last Dream</p>
-              <p className="text-sm font-bold text-gray-900">
-                {statsLoading ? '...' : 'None'}
+        <div className="card hover:shadow-lg transition-all duration-200 border-l-4 border-l-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">This Month</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {statsLoading ? (
+                  <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+                ) : (
+                  <span className="tabular-nums">{recentDreams?.length || 0}</span>
+                )}
               </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {recentDreams?.length ? 'Great progress!' : 'Just getting started'}
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <TrophyIcon className="h-8 w-8 text-green-600" />
+              </div>
             </div>
           </div>
         </div>
