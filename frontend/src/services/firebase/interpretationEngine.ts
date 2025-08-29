@@ -3,27 +3,24 @@ import type { Dream } from './dreamsService';
 import type { Symbol as DreamSymbol } from './symbolsService';
 
 export interface SymbolInterpretation {
+  symbolId: string;
   symbolName: string;
-  archetypalMeaning: string;
-  personalizedInterpretation: string;
-  lightAspect: string;
-  shadowAspect: string;
-  category: string;
-  userFrequency: number;
+  meaning: string;
+  context: string;
+  archetypalConnection: string;
 }
 
 export interface EmotionalInsight {
-  emotionName: string;
-  insight: string;
-  jungianPerspective: string;
-  category: string;
+  emotion: string;
+  intensity: number; // 1-5 scale
+  context: string;
+  psychologicalSignificance: string;
 }
 
 export interface ShadowWork {
-  shadowElements: string[];
-  shadowInterpretation: string;
-  integrationQuestions: string[];
-  guidanceMessage: string;
+  shadowAspects: string[];
+  integrationApproaches: string[];
+  reflection: string;
 }
 
 export interface GeneratedInterpretation {
@@ -81,13 +78,11 @@ class InterpretationEngine {
           const userFrequency = frequencies.find(f => f.symbolName === symbolName)?.frequency || 0;
           
           interpretations.push({
+            symbolId: symbol.id,
             symbolName: symbol.name,
-            archetypalMeaning: symbol.archetypalMeaning,
-            personalizedInterpretation: await this.generatePersonalizedInterpretation(symbol, userFrequency),
-            lightAspect: symbol.positiveAspect,
-            shadowAspect: symbol.negativeAspect,
-            category: symbol.category,
-            userFrequency
+            meaning: symbol.archetypalMeaning,
+            context: await this.generatePersonalizedInterpretation(symbol, userFrequency),
+            archetypalConnection: `${symbol.positiveAspect} / ${symbol.negativeAspect}`
           });
         }
       } catch (error) {
@@ -108,10 +103,10 @@ class InterpretationEngine {
         
         if (emotion) {
           insights.push({
-            emotionName: emotion.name,
-            insight: this.generateEmotionalInsight(emotion.name),
-            jungianPerspective: this.getJungianEmotionalPerspective(emotion.name),
-            category: emotion.category
+            emotion: emotion.name,
+            intensity: this.estimateEmotionalIntensity(emotion.name),
+            context: this.generateEmotionalInsight(emotion.name),
+            psychologicalSignificance: this.getJungianEmotionalPerspective(emotion.name)
           });
         }
       } catch (error) {
@@ -124,11 +119,9 @@ class InterpretationEngine {
 
   private determineOverallTheme(symbols: SymbolInterpretation[]): string {
     // Analyze symbols for theme patterns
-    const categories = symbols.map(s => s.category);
     const symbolNames = symbols.map(s => s.symbolName.toLowerCase());
     
-    if (symbolNames.some(name => ['water', 'tree', 'mountain', 'forest'].includes(name)) || 
-        categories.includes('nature')) {
+    if (symbolNames.some(name => ['water', 'tree', 'mountain', 'forest'].includes(name))) {
       return "Connection and Growth";
     }
     
@@ -210,10 +203,9 @@ class InterpretationEngine {
       : "This dream appears to focus more on conscious development rather than shadow integration. Continue to be open to dreams that may bring shadow material to your awareness.";
 
     return {
-      shadowElements,
-      shadowInterpretation,
-      integrationQuestions,
-      guidanceMessage: "Remember that shadow work is about integration, not elimination. These aspects of yourself, when consciously acknowledged, can become sources of strength and authenticity."
+      shadowAspects: shadowElements,
+      integrationApproaches: integrationQuestions,
+      reflection: shadowInterpretation
     };
   }
 
@@ -257,6 +249,20 @@ class InterpretationEngine {
     };
     
     return insights[emotionName.toLowerCase()] || "This emotion carries important information about your inner state and current life circumstances.";
+  }
+
+  private estimateEmotionalIntensity(emotionName: string): number {
+    const highIntensityEmotions = ['rage', 'terror', 'ecstasy', 'despair', 'fury'];
+    const mediumIntensityEmotions = ['anger', 'fear', 'joy', 'sadness', 'love'];
+    const lowIntensityEmotions = ['mild', 'calm', 'content', 'peaceful', 'serene'];
+    
+    const emotion = emotionName.toLowerCase();
+    
+    if (highIntensityEmotions.some(e => emotion.includes(e))) return 5;
+    if (mediumIntensityEmotions.some(e => emotion.includes(e))) return 3;
+    if (lowIntensityEmotions.some(e => emotion.includes(e))) return 1;
+    
+    return 3; // Default medium intensity
   }
 
   private getJungianEmotionalPerspective(emotionName: string): string {

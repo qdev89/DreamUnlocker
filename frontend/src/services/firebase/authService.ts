@@ -9,7 +9,7 @@ import {
 import type { User as FirebaseAuthUser } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
-import type { FirebaseUser } from '../../types/firebase';
+import type { FirebaseUser, AuthError } from '../../types/firebase';
 
 export interface RegisterData {
   email: string;
@@ -42,6 +42,38 @@ export interface AuthUser {
 }
 
 class FirebaseAuthService {
+  // Helper method to create readable error messages
+  private getReadableErrorMessage(code: string): string {
+    const errorMessages: Record<string, string> = {
+      'auth/email-already-in-use': 'This email is already registered. Please sign in or use a different email.',
+      'auth/weak-password': 'Password should be at least 6 characters long.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/user-disabled': 'This account has been disabled. Please contact support.',
+      'auth/user-not-found': 'No account found with this email address.',
+      'auth/wrong-password': 'Incorrect password. Please try again.',
+      'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
+      'auth/network-request-failed': 'Network error. Please check your connection and try again.',
+      'auth/invalid-credential': 'Invalid login credentials. Please check your email and password.',
+      'permission-denied': 'You do not have permission to access this resource.',
+      'unavailable': 'The service is currently unavailable. Please try again later.'
+    };
+    
+    return errorMessages[code] || 'An unexpected error occurred. Please try again.';
+  }
+
+  // Helper method to create AuthError from Firebase error
+  private createAuthError(error: any, email?: string): AuthError {
+    const authError: AuthError = {
+      code: error.code || 'unknown',
+      message: this.getReadableErrorMessage(error.code || 'unknown')
+    };
+    
+    if (email) {
+      authError.email = email;
+    }
+    
+    return authError;
+  }
   // Register new user
   async register(data: RegisterData): Promise<AuthUser> {
     try {
@@ -73,7 +105,7 @@ class FirebaseAuthService {
       
       return this.mapFirebaseUserToAuthUser(userData);
     } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
+      throw this.createAuthError(error, data.email);
     }
   }
   
@@ -101,7 +133,7 @@ class FirebaseAuthService {
       
       return this.mapFirebaseUserToAuthUser(userDoc.data() as FirebaseUser);
     } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
+      throw this.createAuthError(error, data.email);
     }
   }
   
@@ -110,7 +142,7 @@ class FirebaseAuthService {
     try {
       await signOut(auth);
     } catch (error: any) {
-      throw new Error(error.message || 'Logout failed');
+      throw this.createAuthError(error);
     }
   }
   
@@ -135,7 +167,7 @@ class FirebaseAuthService {
     try {
       await sendPasswordResetEmail(auth, email);
     } catch (error: any) {
-      throw new Error(error.message || 'Password reset failed');
+      throw this.createAuthError(error, email);
     }
   }
   

@@ -41,16 +41,40 @@ export interface FirebaseEmotion {
   category: string;
 }
 
+// Symbol Interpretation Interface
+export interface SymbolInterpretation {
+  symbolId: string;
+  symbolName: string;
+  meaning: string;
+  context: string;
+  archetypalConnection: string;
+}
+
+// Emotional Insight Interface
+export interface EmotionalInsight {
+  emotion: string;
+  intensity: number; // 1-5 scale
+  context: string;
+  psychologicalSignificance: string;
+}
+
+// Shadow Work Interface
+export interface ShadowWork {
+  shadowAspects: string[];
+  integrationApproaches: string[];
+  reflection: string;
+}
+
 // Firebase Dream Interpretation Document
 export interface FirebaseDreamInterpretation {
   id: string; // Same as dreamId
   dreamId: string;
   overallTheme: string;
   primaryMessage: string;
-  symbolInterpretations: any[];
-  emotionalInsights: any[];
+  symbolInterpretations: SymbolInterpretation[];
+  emotionalInsights: EmotionalInsight[];
   exploratoryQuestions: string[];
-  shadowWork: any | null;
+  shadowWork: ShadowWork | null;
   integrationSuggestion: string;
   integrationSuggestions: string[];
   userReflections?: string;
@@ -85,4 +109,19 @@ export interface DreamInterpretationCreateData {
   integrationSuggestion: string;
   userReflections?: string;
   personalReflections?: string;
+}
+
+// Error handling types
+export interface FirebaseError {
+  code: string;
+  message: string;
+}
+
+export interface AuthError extends FirebaseError {
+  email?: string;
+}
+
+export interface DatabaseError extends FirebaseError {
+  operation?: string;
+  documentId?: string;
 }
