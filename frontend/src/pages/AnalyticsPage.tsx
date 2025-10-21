@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ChartBarIcon,
   SparklesIcon,
@@ -12,7 +12,6 @@ import {
   useTopSymbols,
   useTopEmotions,
   useSymbolCorrelations,
-
   useActivityData
 } from '../hooks/useAnalytics';
 import { useInterpretationThemes, usePersonalSymbolPatterns } from '../hooks/useInterpretation';
@@ -24,7 +23,6 @@ export const AnalyticsPage: React.FC = () => {
   const { data: topSymbols, isLoading: symbolsLoading } = useTopSymbols(10);
   const { data: topEmotions, isLoading: emotionsLoading } = useTopEmotions(10);
   const { data: symbolCorrelations } = useSymbolCorrelations();
-  // const { data: emotionPatterns } = useEmotionPatterns();
   const { data: activityData, isLoading: activityLoading } = useActivityData(selectedTimeframe);
   const { data: themes } = useInterpretationThemes();
   const { data: personalPatterns } = usePersonalSymbolPatterns();
@@ -221,25 +219,25 @@ export const AnalyticsPage: React.FC = () => {
             </div>
           ) : topEmotions && topEmotions.length > 0 ? (
             <div className="space-y-4">
-              {topEmotions.map((emotion, index) => (
-                <div key={emotion.symbolName} className="flex items-center justify-between">
+              {topEmotions.map((emotionData, index) => (
+                <div key={emotionData.emotion} className="flex items-center justify-between">
                   <div className="flex items-center flex-1">
                     <span className="text-sm font-medium text-gray-500 w-6">
                       {index + 1}.
                     </span>
-                    <span className="emotion-tag ml-3">{emotion.symbolName}</span>
+                    <span className="emotion-tag ml-3">{emotionData.emotion}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-24 bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-primary-600 h-2 rounded-full transition-all duration-500"
                         style={{
-                          width: `${(emotion.frequency / Math.max(...topEmotions.map(e => e.frequency))) * 100}%`
+                          width: `${(emotionData.count / Math.max(...topEmotions.map(e => e.count))) * 100}%`
                         }}
                       ></div>
                     </div>
                     <span className="text-sm font-medium text-gray-900 w-8 text-right">
-                      {emotion.frequency}
+                      {emotionData.count}
                     </span>
                   </div>
                 </div>

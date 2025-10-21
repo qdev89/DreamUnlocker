@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BookOpenIcon,
   ChartBarIcon,
   SparklesIcon,
   PlusIcon,
-  CalendarDaysIcon,
   FireIcon,
   TrophyIcon,
   ClockIcon,
@@ -20,10 +18,7 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: topSymbols, isLoading: symbolsLoading } = useTopSymbols(5);
-  // const { data: topEmotions, isLoading: emotionsLoading } = useTopEmotions(5);
   const { data: recentDreams, isLoading: dreamsLoading } = useDreams(3);
-
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'all'>('week');
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

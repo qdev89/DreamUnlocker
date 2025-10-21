@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useDream, useDeleteDream } from '../../hooks/useDreams';
 import { useInterpretation, useCreateInterpretation } from '../../hooks/useInterpretation';
+import { logger } from '../../lib/logger';
 
 export const DreamDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -66,7 +67,7 @@ export const DreamDetailPage: React.FC = () => {
         personalReflections: ''
       });
     } catch (error) {
-      console.error('Failed to generate interpretation:', error);
+      logger.error('Failed to generate interpretation', error);
     } finally {
       setIsGeneratingInterpretation(false);
     }
@@ -77,7 +78,7 @@ export const DreamDetailPage: React.FC = () => {
       await deleteDreamMutation.mutateAsync(dreamId);
       navigate('/dreams');
     } catch (error) {
-      console.error('Failed to delete dream:', error);
+      logger.error('Failed to delete dream', error);
     }
   };
 

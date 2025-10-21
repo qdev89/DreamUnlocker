@@ -42,7 +42,25 @@ export const useTopEmotions = (limit: number = 10) => {
 
   return useQuery({
     queryKey: ['top-emotions', limit, user?.id],
-    queryFn: () => firebaseAnalyticsService.getUserRecentSymbols(user!.id, limit),
+    queryFn: async () => {
+      if (!user) return [];
+
+      // Get all user dreams and extract emotions
+      const dreams = await firebaseDreamsService.getUserDreams(user.id);
+      const emotionCounts = new Map<string, number>();
+
+      dreams.forEach(dream => {
+        dream.emotions.forEach(emotion => {
+          emotionCounts.set(emotion, (emotionCounts.get(emotion) || 0) + 1);
+        });
+      });
+
+      // Convert to array and sort by frequency
+      return Array.from(emotionCounts.entries())
+        .map(([emotion, count]) => ({ emotion, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, limit);
+    },
     enabled: !!user,
   });
 };
@@ -62,7 +80,20 @@ export const useEmotionPatterns = () => {
 
   return useQuery({
     queryKey: ['emotion-patterns', user?.id],
-    queryFn: () => firebaseAnalyticsService.getUserRecentSymbols(user!.id),
+    queryFn: async () => {
+      if (!user) return [];
+
+      // Get all user dreams and analyze emotion patterns over time
+      const dreams = await firebaseDreamsService.getUserDreams(user.id);
+
+      // Group emotions by date to see patterns
+      const emotionsByDate = dreams.map(dream => ({
+        date: dream.dreamDate,
+        emotions: dream.emotions
+      }));
+
+      return emotionsByDate;
+    },
     enabled: !!user,
   });
 };

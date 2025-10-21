@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { firebaseAuthService } from '../services/firebase/authService';
 import type { User, RegisterData, LoginData } from '../services/firebase/authService';
+import { logger } from '../lib/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -42,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const userData = await firebaseAuthService.getCurrentUser();
           setUser(userData);
         } catch (error) {
-          console.error('Error getting user data:', error);
+          logger.error('Error getting user data', error);
           setUser(null);
         }
       } else {

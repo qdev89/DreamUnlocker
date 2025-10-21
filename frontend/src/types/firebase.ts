@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
+import type { SymbolInterpretation, EmotionalInsight, ShadowWork } from '../services/firebase/interpretationEngine';
 
 // Firebase User Document
 export interface FirebaseUser {
@@ -47,10 +48,10 @@ export interface FirebaseDreamInterpretation {
   dreamId: string;
   overallTheme: string;
   primaryMessage: string;
-  symbolInterpretations: any[];
-  emotionalInsights: any[];
+  symbolInterpretations: SymbolInterpretation[];
+  emotionalInsights: EmotionalInsight[];
   exploratoryQuestions: string[];
-  shadowWork: any | null;
+  shadowWork: ShadowWork | null;
   integrationSuggestion: string;
   integrationSuggestions: string[];
   userReflections?: string;

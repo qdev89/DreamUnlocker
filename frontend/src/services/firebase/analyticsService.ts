@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import type { FirebaseUserSymbolFrequency } from '../../types/firebase';
+import { logger } from '../../lib/logger';
 
 export interface UserSymbolFrequency {
   id: string;
@@ -71,7 +72,7 @@ class FirebaseAnalyticsService {
       });
     } catch (error: any) {
       // If symbol doesn't exist, we'll skip updating global frequency
-      console.warn(`Could not update global frequency for symbol ${symbolId}:`, error.message);
+      logger.warn(`Could not update global frequency for symbol ${symbolId}:`, error.message);
     }
   }
   

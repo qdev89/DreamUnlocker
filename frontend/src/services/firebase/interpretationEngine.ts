@@ -1,6 +1,7 @@
 import { firebaseSymbolsService, firebaseAnalyticsService } from './index';
 import type { Dream } from './dreamsService';
 import type { Symbol as DreamSymbol } from './symbolsService';
+import { logger } from '../../lib/logger';
 
 export interface SymbolInterpretation {
   symbolName: string;
@@ -91,7 +92,7 @@ class InterpretationEngine {
           });
         }
       } catch (error) {
-        console.warn(`Could not interpret symbol: ${symbolName}`, error);
+        logger.warn(`Could not interpret symbol: ${symbolName}`, error);
       }
     }
     
@@ -115,7 +116,7 @@ class InterpretationEngine {
           });
         }
       } catch (error) {
-        console.warn(`Could not analyze emotion: ${emotionName}`, error);
+        logger.warn(`Could not analyze emotion: ${emotionName}`, error);
       }
     }
     
