@@ -15,36 +15,70 @@
 }
 
 @layer components {
+  /* Primary Button with all states */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800
+           text-white font-medium py-2.5 px-5 rounded-lg
+           transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600;
   }
 
+  /* Secondary Button with all states */
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+    @apply bg-gray-200 hover:bg-gray-300 active:bg-gray-400
+           text-gray-900 font-medium py-2.5 px-5 rounded-lg
+           transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-200;
   }
 
+  /* Card with hover state for interactive cards */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6
+           transition-shadow duration-200;
   }
 
+  .card-interactive {
+    @apply card hover:shadow-md;
+  }
+
+  /* Input fields with consistent focus states */
   .input-field {
-    @apply block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    @apply block w-full rounded-lg border-gray-300 shadow-sm
+           focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           sm:text-sm
+           disabled:bg-gray-100 disabled:cursor-not-allowed;
   }
 
   .textarea-field {
-    @apply block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm resize-none;
+    @apply block w-full rounded-lg border-gray-300 shadow-sm
+           focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+           sm:text-sm resize-none
+           disabled:bg-gray-100 disabled:cursor-not-allowed;
   }
 
+  /* Improved touch targets for mobile - minimum 44px */
   .dream-symbol {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800 hover:bg-secondary-200 transition-colors duration-200;
+    @apply inline-flex items-center
+           px-3 py-1.5 sm:px-2.5 sm:py-0.5
+           rounded-full text-sm sm:text-xs font-medium
+           bg-secondary-100 text-secondary-800
+           hover:bg-secondary-200 focus:bg-secondary-200
+           transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-1;
   }
 
   .emotion-tag {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800;
+    @apply inline-flex items-center
+           px-3 py-1.5 sm:px-2.5 sm:py-0.5
+           rounded-full text-sm sm:text-xs font-medium
+           bg-primary-100 text-primary-800;
   }
 
   .interpretation-section {
-    @apply bg-gradient-to-br from-dream-50 to-primary-50 rounded-xl p-6 border border-dream-200;
+    @apply bg-gradient-to-br from-dream-50 to-primary-50
+           rounded-xl p-6 border border-dream-200;
   }
 }
 

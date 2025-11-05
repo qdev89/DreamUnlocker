@@ -7,7 +7,8 @@ import {
   XMarkIcon,
   PlusIcon,
   InformationCircleIcon,
-  BookmarkIcon
+  BookmarkIcon,
+  LightBulbIcon
 } from '@heroicons/react/24/outline';
 import { useCreateDream, useSymbols, useEmotions } from '../../hooks/useDreams';
 import type { DreamCreateData } from '../../types/firebase';
@@ -501,9 +502,9 @@ export const CreateDreamPage: React.FC = () => {
           {/* Helpful Tips */}
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start">
-              <InformationCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+              <LightBulbIcon className="h-5 w-5 text-amber-500 mt-0.5 mr-2 flex-shrink-0" aria-hidden="true" />
               <div className="text-sm">
-                <p className="text-blue-900 font-medium mb-1">💡 Tips for Better Dream Analysis:</p>
+                <p className="text-blue-900 font-medium mb-1">Tips for Better Dream Analysis:</p>
                 <ul className="text-blue-800 space-y-1 text-xs">
                   <li>• Include emotions you felt during and after the dream</li>
                   <li>• Describe colors, sounds, and sensations in detail</li>

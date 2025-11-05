@@ -8,7 +8,8 @@ import {
   TrophyIcon,
   ClockIcon,
   ArrowTrendingUpIcon,
-  MoonIcon
+  MoonIcon,
+  SunIcon
 } from '@heroicons/react/24/outline';
 import { useDashboardStats, useTopSymbols } from '../hooks/useAnalytics';
 import { useDreams } from '../hooks/useDreams';
@@ -53,13 +54,17 @@ export const DashboardPage: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                {getGreeting()}, {user?.firstName}! 
-                <span className="ml-2 text-2xl">
-                  {getTimeOfDay() === 'morning' && '🌅'}
-                  {getTimeOfDay() === 'afternoon' && '☀️'}
-                  {getTimeOfDay() === 'evening' && '🌙'}
-                </span>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                {getGreeting()}, {user?.firstName}!
+                {getTimeOfDay() === 'morning' && (
+                  <SunIcon className="h-7 w-7 text-amber-500" aria-label="Morning" />
+                )}
+                {getTimeOfDay() === 'afternoon' && (
+                  <SunIcon className="h-7 w-7 text-yellow-500" aria-label="Afternoon" />
+                )}
+                {getTimeOfDay() === 'evening' && (
+                  <MoonIcon className="h-7 w-7 text-indigo-600" aria-label="Evening" />
+                )}
               </h1>
               <p className="text-lg text-gray-700 mb-4">
                 Ready to explore the mysteries of your unconscious mind?
