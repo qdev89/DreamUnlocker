@@ -5,9 +5,34 @@
 
 ---
 
-## 🚀 Quick Deploy (Production)
+## 🚀 Automated Deploy (Recommended)
 
-For immediate deployment to production:
+**✨ NEW: GitHub Actions Automated Deployment**
+
+The easiest way to deploy - just push your code:
+
+```bash
+git push origin main
+```
+
+That's it! GitHub Actions will automatically:
+- ✅ Build the frontend
+- ✅ Deploy to Firebase
+- ✅ Update https://dream-unlocker-mvp.web.app
+
+**Setup Required:** Follow [GITHUB-ACTIONS-SETUP.md](./GITHUB-ACTIONS-SETUP.md) (one-time, 5 minutes)
+
+**Benefits:**
+- No Firebase CLI needed
+- No manual build commands
+- Automatic on every push to main
+- View deployment status in GitHub Actions tab
+
+---
+
+## 🔧 Manual Deploy (Alternative)
+
+For immediate manual deployment:
 
 ```bash
 # 1. Navigate to project root
@@ -296,29 +321,23 @@ lighthouse https://dream-unlocker-mvp.web.app --view
 
 ## 🔄 Continuous Deployment
 
-For automated deployments, add to GitHub Actions:
+**✅ GitHub Actions workflow already configured!**
 
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Firebase
-on:
-  push:
-    branches: [main]
+The workflow file is located at `.github/workflows/firebase-deploy.yml` and will automatically deploy on push to `main` or `master` branch.
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-      - run: cd frontend && npm ci && npm run build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: dream-unlocker-mvp
-```
+**Setup Instructions:** See [GITHUB-ACTIONS-SETUP.md](./GITHUB-ACTIONS-SETUP.md) for complete setup guide.
+
+**How it works:**
+1. Push code to main branch
+2. GitHub Actions triggers automatically
+3. Builds frontend (`npm run build`)
+4. Deploys to Firebase
+5. App is live at https://dream-unlocker-mvp.web.app
+
+**Monitor Deployments:**
+- GitHub → Actions tab
+- View real-time deployment progress
+- Check logs for any issues
 
 ---
 
