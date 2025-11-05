@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useCreateDream, useSymbols, useEmotions } from '../../hooks/useDreams';
 import type { DreamCreateData } from '../../types/firebase';
+import { logger } from '../../lib/logger';
 
 export const CreateDreamPage: React.FC = () => {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ export const CreateDreamPage: React.FC = () => {
             setSelectedEmotions(parsed.emotions || []);
           }
         } catch (error) {
-          console.error('Error loading draft:', error);
+          logger.error('Error loading draft', error);
         }
       }
     };

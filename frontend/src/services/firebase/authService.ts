@@ -10,6 +10,7 @@ import type { User as FirebaseAuthUser } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 import type { FirebaseUser } from '../../types/firebase';
+import { logger } from '../../lib/logger';
 
 export interface RegisterData {
   email: string;
@@ -122,10 +123,10 @@ class FirebaseAuthService {
     try {
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (!userDoc.exists()) return null;
-      
+
       return this.mapFirebaseUserToAuthUser(userDoc.data() as FirebaseUser);
     } catch (error) {
-      console.error('Error getting current user:', error);
+      logger.error('Error getting current user', error);
       return null;
     }
   }
@@ -152,7 +153,7 @@ class FirebaseAuthService {
             callback(null);
           }
         } catch (error) {
-          console.error('Error in auth state change:', error);
+          logger.error('Error in auth state change', error);
           callback(null);
         }
       } else {

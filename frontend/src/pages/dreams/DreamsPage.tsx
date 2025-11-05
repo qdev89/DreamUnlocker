@@ -10,9 +10,9 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline';
 import { useDreams, useDeleteDream, useSearchDreams } from '../../hooks/useDreams';
+import { logger } from '../../lib/logger';
 
 export const DreamsPage: React.FC = () => {
-  // const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
@@ -35,7 +35,7 @@ export const DreamsPage: React.FC = () => {
       await deleteDreamMutation.mutateAsync(dreamId);
       setShowDeleteConfirm(null);
     } catch (error) {
-      console.error('Failed to delete dream:', error);
+      logger.error('Failed to delete dream', error);
     }
   };
 
@@ -216,8 +216,6 @@ export const DreamsPage: React.FC = () => {
           ))}
         </div>
       )}
-
-      {/* Pagination removed for Firebase implementation */}
     </div>
   );
 };
