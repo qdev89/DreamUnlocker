@@ -37,6 +37,14 @@ npm run dev     # http://localhost:5173
 ```
 
 ### **Firebase Deployment**
+
+**Automated (Recommended):**
+```bash
+git push origin main  # GitHub Actions deploys automatically!
+```
+See [GITHUB-ACTIONS-SETUP.md](GITHUB-ACTIONS-SETUP.md) for one-time setup (5 minutes).
+
+**Manual:**
 ```bash
 npm install -g firebase-tools
 firebase login
@@ -98,6 +106,8 @@ npm test        # Run comprehensive test suite
 |------|---------|
 | `PROJECT-PLAN.md` | 📋 Complete project roadmap & status |
 | `CLAUDE.md` | 🔧 Development instructions & commands |
+| `GITHUB-ACTIONS-SETUP.md` | 🚀 Automated deployment setup (5 min) |
+| `DEPLOY.md` | 📦 Manual deployment guide |
 | `frontend/src/services/firebase/` | 🔥 Firebase service layer |
 | `tests/` | 🧪 Comprehensive test suite |
 | `firestore.rules` | 🔒 Database security rules |
@@ -110,7 +120,7 @@ npm test        # Run comprehensive test suite
 - **📊 Firebase Console:** https://console.firebase.google.com/project/dream-unlocker-mvp
 - **📋 Detailed Project Plan:** [PROJECT-PLAN.md](PROJECT-PLAN.md)
 - **🧪 Run Tests:** `cd tests && npm test`
-- **🚀 Deploy:** `firebase deploy`
+- **🚀 Deploy:** See [GITHUB-ACTIONS-SETUP.md](GITHUB-ACTIONS-SETUP.md) (automated) or `firebase deploy` (manual)
 
 ---
 
